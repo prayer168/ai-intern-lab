@@ -20,3 +20,12 @@ def test_export_contains_all_questions(tmp_path):
     texts = [c.value for c in ws["B"] if c.value]
     for q in questions:
         assert q["question"] in texts
+
+
+def test_export_first_question_on_row_2(tmp_path):
+    out = tmp_path / "out.xlsx"
+    questions = load_questions("data/sample_quiz.json")
+    export_to_excel(questions, out)
+    ws = load_workbook(out).active
+    assert ws.cell(row=2, column=1).value == 1
+    assert ws.cell(row=2, column=2).value == questions[0]["question"]
