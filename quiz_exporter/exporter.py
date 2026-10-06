@@ -12,7 +12,7 @@ def export_to_excel(questions, out_path):
 
     for i, q in enumerate(questions, start=1):
         options = list(q.get("options", [])) + [""] * 4
-        row = i + 2
+        row = i + 1
         ws.cell(row=row, column=1, value=i)
         ws.cell(row=row, column=2, value=q["question"])
         for col, opt in enumerate(options[:4], start=3):
