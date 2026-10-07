@@ -29,3 +29,11 @@ def test_export_first_question_on_row_2(tmp_path):
     ws = load_workbook(out).active
     assert ws.cell(row=2, column=1).value == 1
     assert ws.cell(row=2, column=2).value == questions[0]["question"]
+
+
+def test_export_lowercase_answer_unified_to_uppercase(tmp_path):
+    out = tmp_path / "out.xlsx"
+    questions = [{"question": "題目一", "options": ["A", "B", "C", "D"], "answer": "c"}]
+    export_to_excel(questions, out)
+    ws = load_workbook(out).active
+    assert ws.cell(row=2, column=7).value == "C"
