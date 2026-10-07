@@ -9,6 +9,7 @@ YouTube 系列《免費 AI 打工仔》的共用練習專案。
 ```bash
 pip install -r requirements.txt
 python -m quiz_exporter data/sample_quiz.json out.xlsx
+python -m quiz_exporter data/sample_quiz.json out.csv   # 檔名結尾是 .csv 時匯出 CSV（UTF-8 with BOM）
 python -m pytest -q
 ```
 
