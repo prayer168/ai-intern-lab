@@ -37,3 +37,17 @@ def test_export_lowercase_answer_unified_to_uppercase(tmp_path):
     export_to_excel(questions, out)
     ws = load_workbook(out).active
     assert ws.cell(row=2, column=7).value == "C"
+
+
+def test_export_fewer_options_pads_empty_cells(tmp_path):
+    import json
+
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [{"question": "Short", "options": ["One", "Two"], "answer": "A"}]}),
+        encoding="utf-8",
+    )
+    out = tmp_path / "out.xlsx"
+    export_to_excel(load_questions(p), out)
+    ws = load_workbook(out).active
+    assert [ws.cell(row=2, column=c).value for c in range(3, 7)] == ["One", "Two", None, None]
