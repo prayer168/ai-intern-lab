@@ -17,7 +17,8 @@ def export_to_excel(questions, out_path):
         ws.cell(row=row, column=2, value=q["question"])
         for col, opt in enumerate(options[:4], start=3):
             ws.cell(row=row, column=col, value=opt)
-        ws.cell(row=row, column=7, value=q["answer"])
+        ans = q.get("answer", "")
+        ws.cell(row=row, column=7, value=ans.upper() if isinstance(ans, str) else ans)
 
     wb.save(out_path)
     return out_path
