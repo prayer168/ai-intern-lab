@@ -53,3 +53,17 @@ def test_lowercase_answer_accepted_and_uppercased(tmp_path):
     )
     questions = load_questions(p)
     assert questions[0]["answer"] == "B"
+
+
+@pytest.mark.parametrize("option_count", [5, 6])
+def test_excess_options_raise_with_question_number_and_count(tmp_path, option_count):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "First", "options": ["A", "B"], "answer": "A"},
+            {"question": "Second", "options": [str(i) for i in range(option_count)], "answer": "A"},
+        ]}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match=f"第 2 題.*{option_count} 個選項"):
+        load_questions(p)
