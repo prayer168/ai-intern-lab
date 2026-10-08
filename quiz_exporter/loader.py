@@ -12,6 +12,10 @@ def load_questions(path):
     for i, q in enumerate(questions, start=1):
         if "question" not in q or "answer" not in q:
             raise ValueError(f"第 {i} 題缺少 question 或 answer 欄位")
+        text = q["question"].strip() if isinstance(q["question"], str) else ""
+        if not text:
+            raise ValueError(f"第 {i} 題的題目是空白的")
+        q["question"] = text
         ans = q["answer"].strip().upper() if isinstance(q["answer"], str) else None
         if not ans or ans not in VALID_ANSWERS:
             raise ValueError(f"第 {i} 題答案必須是 A–D（目前為 {q['answer']!r}）")
