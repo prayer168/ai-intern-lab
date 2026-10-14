@@ -51,3 +51,35 @@ def test_export_fewer_options_pads_empty_cells(tmp_path):
     export_to_excel(load_questions(p), out)
     ws = load_workbook(out).active
     assert [ws.cell(row=2, column=c).value for c in range(3, 7)] == ["One", "Two", None, None]
+
+
+def test_export_header_row_is_bold(tmp_path):
+    out = tmp_path / "out.xlsx"
+    export_to_excel(load_questions("data/sample_quiz.json"), out)
+    ws = load_workbook(out).active
+    assert all(ws.cell(row=1, column=c).font.bold for c in range(1, 8))
+    assert not ws.cell(row=2, column=2).font.bold
+
+
+def test_export_freezes_header_row(tmp_path):
+    out = tmp_path / "out.xlsx"
+    export_to_excel(load_questions("data/sample_quiz.json"), out)
+    ws = load_workbook(out).active
+    assert ws.freeze_panes == "A2"
+
+
+def test_export_question_column_at_least_40_wide(tmp_path):
+    out = tmp_path / "out.xlsx"
+    export_to_excel([{"question": "短", "options": ["A"], "answer": "A"}], out)
+    ws = load_workbook(out).active
+    assert ws.column_dimensions["B"].width >= 40
+
+
+def test_export_other_columns_fit_content_with_cjk_as_double_width(tmp_path):
+    out = tmp_path / "out.xlsx"
+    export_to_excel([{"question": "題", "options": ["二氧化碳二氧化碳", "B"], "answer": "A"}], out)
+    ws = load_workbook(out).active
+    # 「二氧化碳二氧化碳」8 個中文字 = 16 個字元寬
+    assert ws.column_dimensions["C"].width >= 16
+    # 「選項B」標題 = 2*2 + 1 = 5 個字元寬
+    assert ws.column_dimensions["D"].width >= 5
