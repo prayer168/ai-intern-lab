@@ -8,6 +8,8 @@ VALID_ANSWERS = {"A", "B", "C", "D"}
 def load_questions(path):
     """讀取題庫 JSON，回傳題目清單（list of dict）。"""
     data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(data, dict):
+        raise ValueError('題庫檔最外層必須是物件，例如 {"questions": [...]}')
     questions = data.get("questions", [])
     for i, q in enumerate(questions, start=1):
         if "question" not in q or "answer" not in q:

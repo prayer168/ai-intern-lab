@@ -32,3 +32,14 @@ def test_invalid_question_prints_loader_message(tmp_path, capsys):
     assert captured.out.strip().startswith("第 1 題答案必須是 A–D")
     assert "Traceback" not in captured.out + captured.err
     assert not out.exists()
+
+
+def test_top_level_array_prints_friendly_message(tmp_path, capsys):
+    bad = tmp_path / "list.json"
+    bad.write_text(json.dumps([{"question": "水在幾度會沸騰？", "answer": "C"}]), encoding="utf-8")
+    out = tmp_path / "out.xlsx"
+    assert main([str(bad), str(out)]) == 1
+    captured = capsys.readouterr()
+    assert "最外層必須是物件" in captured.out
+    assert "Traceback" not in captured.out + captured.err
+    assert not out.exists()
