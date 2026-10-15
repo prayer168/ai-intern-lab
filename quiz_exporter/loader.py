@@ -22,6 +22,14 @@ def load_questions(path):
         if not text:
             raise ValueError(f"第 {i} 題的題目是空白的")
         q["question"] = text
+        opts = q.get("options", [])
+        if isinstance(opts, list):
+            seen = []
+            for opt in opts:
+                key = opt.strip() if isinstance(opt, str) else opt
+                if key in seen and key not in ("", None):
+                    raise ValueError(f"第 {i} 題有重複的選項：{key}")
+                seen.append(key)
         ans = q["answer"].strip().upper() if isinstance(q["answer"], str) else None
         if not ans or ans not in VALID_ANSWERS:
             raise ValueError(f"第 {i} 題答案必須是 A–D（目前為 {q['answer']!r}）")
