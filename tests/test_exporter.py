@@ -85,6 +85,15 @@ def test_export_other_columns_fit_content_with_cjk_as_double_width(tmp_path):
     assert ws.column_dimensions["D"].width >= 5
 
 
+def test_column_width_capped_at_excel_maximum(tmp_path):
+    out = tmp_path / "out.xlsx"
+    export_to_excel([{"question": "長" * 300, "options": ["甲" * 200, "乙"], "answer": "A"}], out)
+    ws = load_workbook(out).active
+    # Excel 欄寬上限是 255 個字元寬
+    assert ws.column_dimensions["B"].width <= 255
+    assert ws.column_dimensions["C"].width <= 255
+
+
 def test_text_starting_with_equals_is_not_formula(tmp_path):
     out = tmp_path / "out.xlsx"
     export_to_excel([{"question": "=1+1 等於多少？", "options": ["=2", "3"], "answer": "A"}], out)
