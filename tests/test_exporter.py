@@ -85,6 +85,16 @@ def test_export_other_columns_fit_content_with_cjk_as_double_width(tmp_path):
     assert ws.column_dimensions["D"].width >= 5
 
 
+def test_invisible_control_characters_are_removed(tmp_path):
+    out = tmp_path / "out.xlsx"
+    # 從 Word / PDF 複製過來的文字常夾帶 \x0b（垂直定位字元）等 Excel 不允許的控制字元
+    export_to_excel([{"question": "水在\x0b幾度沸騰？", "options": ["100\x01°C", "第一行\n第二行"], "answer": "A"}], out)
+    ws = load_workbook(out).active
+    assert ws.cell(row=2, column=2).value == "水在幾度沸騰？"
+    assert ws.cell(row=2, column=3).value == "100°C"
+    assert ws.cell(row=2, column=4).value == "第一行\n第二行"
+
+
 def test_column_width_capped_at_excel_maximum(tmp_path):
     out = tmp_path / "out.xlsx"
     export_to_excel([{"question": "長" * 300, "options": ["甲" * 200, "乙"], "answer": "A"}], out)
