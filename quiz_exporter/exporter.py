@@ -28,6 +28,13 @@ def _style_sheet(ws):
         ws.column_dimensions[get_column_letter(col)].width = width
 
 
+def _set_text(ws, row, col, value):
+    """寫入儲存格；以 = 開頭的文字仍當一般文字，不讓 Excel 當成公式。"""
+    cell = ws.cell(row=row, column=col, value=value)
+    if isinstance(value, str) and value.startswith("="):
+        cell.data_type = "s"
+
+
 def export_to_excel(questions, out_path):
     """把題目清單匯出成 Excel，第一列是標題。"""
     wb = Workbook()
@@ -39,9 +46,9 @@ def export_to_excel(questions, out_path):
         options = list(q.get("options", [])) + [""] * 4
         row = i + 1
         ws.cell(row=row, column=1, value=i)
-        ws.cell(row=row, column=2, value=q["question"])
+        _set_text(ws, row, 2, q["question"])
         for col, opt in enumerate(options[:4], start=3):
-            ws.cell(row=row, column=col, value=opt)
+            _set_text(ws, row, col, opt)
         ans = q.get("answer", "")
         ws.cell(row=row, column=7, value=ans.upper() if isinstance(ans, str) else ans)
 
