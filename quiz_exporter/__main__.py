@@ -9,6 +9,9 @@ def main(argv=None):
     if len(argv) != 2:
         print("用法：python -m quiz_exporter <題庫.json> <輸出.xlsx|輸出.csv>")
         return 1
+    if not argv[1].lower().endswith((".xlsx", ".csv")):
+        print(f"輸出檔名必須是 .xlsx 或 .csv 結尾：{argv[1]}")
+        return 1
     try:
         questions = load_questions(argv[0])
     except FileNotFoundError:
