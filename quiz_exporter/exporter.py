@@ -3,6 +3,7 @@ import csv
 import unicodedata
 
 from openpyxl import Workbook
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 
@@ -28,6 +29,11 @@ def _style_sheet(ws):
         ws.column_dimensions[get_column_letter(col)].width = width
 
 
+def _clean(value):
+    """去掉 Excel 不允許的隱形控制字元（常見於從 Word / PDF 複製的文字），保留換行與 tab。"""
+    return ILLEGAL_CHARACTERS_RE.sub("", value) if isinstance(value, str) else value
+
+
 def export_to_excel(questions, out_path):
     """把題目清單匯出成 Excel，第一列是標題。"""
     wb = Workbook()
@@ -39,9 +45,9 @@ def export_to_excel(questions, out_path):
         options = list(q.get("options", [])) + [""] * 4
         row = i + 1
         ws.cell(row=row, column=1, value=i)
-        ws.cell(row=row, column=2, value=q["question"])
+        ws.cell(row=row, column=2, value=_clean(q["question"]))
         for col, opt in enumerate(options[:4], start=3):
-            ws.cell(row=row, column=col, value=opt)
+            ws.cell(row=row, column=col, value=_clean(opt))
         ans = q.get("answer", "")
         ws.cell(row=row, column=7, value=ans.upper() if isinstance(ans, str) else ans)
 
