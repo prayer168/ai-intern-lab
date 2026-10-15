@@ -99,3 +99,17 @@ def test_utf8_bom_file_is_accepted(tmp_path):
         encoding="utf-8-sig",
     )
     assert load_questions(p) == [{"question": "水在幾度會沸騰？", "answer": "C"}]
+
+
+@pytest.mark.parametrize("options", [["甲", "乙", "甲", "丁"], ["甲", " 甲 "]])
+def test_duplicate_options_raise_with_question_number(tmp_path, options):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "第一題", "options": ["甲", "乙"], "answer": "A"},
+            {"question": "第二題", "options": options, "answer": "A"},
+        ]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題有重複的選項：甲"):
+        load_questions(p)
