@@ -8,6 +8,8 @@ VALID_ANSWERS = {"A", "B", "C", "D"}
 def load_questions(path):
     """讀取題庫 JSON，回傳題目清單（list of dict）。"""
     data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(data, dict):
+        raise ValueError('題庫檔最外層必須是物件，例如 {"questions": [...]}')
     questions = data.get("questions", [])
     if not questions:
         raise ValueError('題庫裡沒有任何題目，請確認有 "questions" 清單且至少一題')
@@ -24,5 +26,7 @@ def load_questions(path):
         option_count = len(q.get("options", []))
         if option_count > 4:
             raise ValueError(f"第 {i} 題有 {option_count} 個選項，最多允許 4 個選項")
+        if option_count and "ABCD".index(ans) >= option_count:
+            raise ValueError(f"第 {i} 題答案是 {ans}，但只有 {option_count} 個選項")
         q["answer"] = ans
     return questions
