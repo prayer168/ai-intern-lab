@@ -8,6 +8,7 @@ from openpyxl.utils import get_column_letter
 
 HEADERS = ["題號", "題目", "選項A", "選項B", "選項C", "選項D", "答案"]
 QUESTION_MIN_WIDTH = 40
+EXCEL_MAX_WIDTH = 255
 
 
 def _display_width(value):
@@ -17,7 +18,7 @@ def _display_width(value):
 
 
 def _style_sheet(ws):
-    """標題列加粗、凍結第一列、依內容調整欄寬（題目欄至少 40）。"""
+    """標題列加粗、凍結第一列、依內容調整欄寬（題目欄至少 40，所有欄最多 255）。"""
     for cell in ws[1]:
         cell.font = Font(bold=True)
     ws.freeze_panes = "A2"
@@ -25,7 +26,7 @@ def _style_sheet(ws):
         width = max(_display_width(c.value) for c in ws[get_column_letter(col)]) + 2
         if col == 2:
             width = max(width, QUESTION_MIN_WIDTH)
-        ws.column_dimensions[get_column_letter(col)].width = width
+        ws.column_dimensions[get_column_letter(col)].width = min(width, EXCEL_MAX_WIDTH)
 
 
 def export_to_excel(questions, out_path):
