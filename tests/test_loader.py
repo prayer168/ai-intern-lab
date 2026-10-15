@@ -101,6 +101,29 @@ def test_utf8_bom_file_is_accepted(tmp_path):
     assert load_questions(p) == [{"question": "水在幾度會沸騰？", "answer": "C"}]
 
 
+@pytest.mark.parametrize("bad", [["甲"], {"text": "甲"}, True])
+def test_non_text_option_raises_with_question_and_option_number(tmp_path, bad):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "第一題", "options": ["甲", "乙"], "answer": "A"},
+            {"question": "第二題", "options": ["甲", bad, "丙"], "answer": "A"},
+        ]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題的選項B必須是文字或數字"):
+        load_questions(p)
+
+
+def test_numeric_options_still_accepted(tmp_path):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [{"question": "1+1=?", "options": [1, 2, 3.5, "4"], "answer": "B"}]}),
+        encoding="utf-8",
+    )
+    assert load_questions(p)[0]["options"] == [1, 2, 3.5, "4"]
+
+
 @pytest.mark.parametrize("options", [["甲", "乙", "甲", "丁"], ["甲", " 甲 "]])
 def test_duplicate_options_raise_with_question_number(tmp_path, options):
     p = tmp_path / "q.json"
