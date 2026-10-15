@@ -113,3 +113,56 @@ def test_blank_option_raises_with_question_and_option_number(tmp_path, blank):
     )
     with pytest.raises(ValueError, match="第 2 題的選項B是空白的"):
         load_questions(p)
+
+
+@pytest.mark.parametrize("options", ["水,火", "甲乙丙丁", {"A": "水"}])
+def test_non_list_options_raises_with_question_number(tmp_path, options):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "第一題", "options": ["甲", "乙"], "answer": "A"},
+            {"question": "第二題", "options": options, "answer": "A"},
+        ]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題的 options 必須是清單"):
+        load_questions(p)
+
+
+@pytest.mark.parametrize("item", [123, None, ["水在幾度會沸騰？", "C"]])
+def test_non_object_question_raises_with_question_number(tmp_path, item):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [{"question": "第一題", "answer": "A"}, item]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題格式不正確"):
+        load_questions(p)
+
+
+@pytest.mark.parametrize("data", [{"question": [{"question": "打錯欄位名稱", "answer": "A"}]}, {"questions": []}])
+def test_no_questions_raises(tmp_path, data):
+    p = tmp_path / "q.json"
+    p.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="題庫裡沒有任何題目"):
+        load_questions(p)
+
+
+def test_top_level_array_raises_friendly_error(tmp_path):
+    p = tmp_path / "q.json"
+    p.write_text(json.dumps([{"question": "水在幾度會沸騰？", "answer": "C"}]), encoding="utf-8")
+    with pytest.raises(ValueError, match="最外層必須是物件"):
+        load_questions(p)
+
+
+def test_answer_beyond_given_options_raises(tmp_path):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "第一題", "options": ["甲", "乙", "丙", "丁"], "answer": "D"},
+            {"question": "第二題", "options": ["對", "錯"], "answer": "D"},
+        ]}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題答案是 D，但只有 2 個選項"):
+        load_questions(p)
