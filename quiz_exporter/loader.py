@@ -11,6 +11,8 @@ def load_questions(path):
     if not isinstance(data, dict):
         raise ValueError('題庫檔最外層必須是物件，例如 {"questions": [...]}')
     questions = data.get("questions", [])
+    if not isinstance(questions, list):
+        raise ValueError('題庫的 "questions" 必須是清單，例如 "questions": [{...}, {...}]')
     if not questions:
         raise ValueError('題庫裡沒有任何題目，請確認有 "questions" 清單且至少一題')
     for i, q in enumerate(questions, start=1):
