@@ -20,6 +20,8 @@ def load_questions(path):
         if not ans or ans not in VALID_ANSWERS:
             raise ValueError(f"第 {i} 題答案必須是 A–D（目前為 {q['answer']!r}）")
         option_count = len(q.get("options", []))
+        if isinstance(q.get("options"), list):
+            q["options"] = [o.strip() if isinstance(o, str) else o for o in q["options"]]
         if option_count > 4:
             raise ValueError(f"第 {i} 題有 {option_count} 個選項，最多允許 4 個選項")
         q["answer"] = ans

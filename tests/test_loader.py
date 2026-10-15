@@ -99,3 +99,14 @@ def test_utf8_bom_file_is_accepted(tmp_path):
         encoding="utf-8-sig",
     )
     assert load_questions(p) == [{"question": "水在幾度會沸騰？", "answer": "C"}]
+
+
+def test_option_whitespace_is_stripped(tmp_path):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "水的沸點？", "options": [" 50°C", "100°C ", "\t80°C\n", 120], "answer": "B"},
+        ]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    assert load_questions(p)[0]["options"] == ["50°C", "100°C", "80°C", 120]
