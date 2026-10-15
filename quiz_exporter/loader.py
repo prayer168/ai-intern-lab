@@ -40,6 +40,8 @@ def load_questions(path):
         if not isinstance(q.get("options", []), list):
             raise ValueError(f'第 {i} 題的 options 必須是清單，例如 ["甲", "乙", "丙", "丁"]')
         option_count = len(q.get("options", []))
+        if isinstance(q.get("options"), list):
+            q["options"] = [o.strip() if isinstance(o, str) else o for o in q["options"]]
         if option_count > 4:
             raise ValueError(f"第 {i} 題有 {option_count} 個選項，最多允許 4 個選項")
         if option_count and "ABCD".index(ans) >= option_count:
