@@ -99,3 +99,11 @@ def test_utf8_bom_file_is_accepted(tmp_path):
         encoding="utf-8-sig",
     )
     assert load_questions(p) == [{"question": "水在幾度會沸騰？", "answer": "C"}]
+
+
+@pytest.mark.parametrize("data", [{"question": [{"question": "打錯欄位名稱", "answer": "A"}]}, {"questions": []}])
+def test_no_questions_raises(tmp_path, data):
+    p = tmp_path / "q.json"
+    p.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="題庫裡沒有任何題目"):
+        load_questions(p)

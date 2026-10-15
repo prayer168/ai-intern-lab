@@ -9,6 +9,8 @@ def load_questions(path):
     """讀取題庫 JSON，回傳題目清單（list of dict）。"""
     data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
     questions = data.get("questions", [])
+    if not questions:
+        raise ValueError('題庫裡沒有任何題目，請確認有 "questions" 清單且至少一題')
     for i, q in enumerate(questions, start=1):
         if "question" not in q or "answer" not in q:
             raise ValueError(f"第 {i} 題缺少 question 或 answer 欄位")
