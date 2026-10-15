@@ -41,3 +41,11 @@ def test_cli_picks_csv_by_extension(tmp_path):
     out = tmp_path / "out.csv"
     assert main(["data/sample_quiz.json", str(out)]) == 0
     assert out.read_bytes().startswith(b"\xef\xbb\xbf")
+
+
+def test_csv_text_starting_with_equals_is_not_formula(tmp_path):
+    out = tmp_path / "out.csv"
+    export_to_csv([{"question": "=1+1 等於多少？", "options": ["=2", "3"], "answer": "A"}], out)
+    row = _read_rows(out)[1]
+    assert row[1] == "'=1+1 等於多少？"
+    assert row[2:4] == ["'=2", "3"]
