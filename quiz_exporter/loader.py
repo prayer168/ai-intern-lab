@@ -1,4 +1,5 @@
 import json
+import unicodedata
 from pathlib import Path
 
 
@@ -36,7 +37,8 @@ def load_questions(path):
                 if key in seen and key not in ("", None):
                     raise ValueError(f"第 {i} 題有重複的選項：{key}")
                 seen.append(key)
-        ans = q["answer"].strip().upper() if isinstance(q["answer"], str) else None
+        # 中文輸入法全形模式打出的「Ａ」「ｂ」也要接受，轉成半形
+        ans = unicodedata.normalize("NFKC", q["answer"]).strip().upper() if isinstance(q["answer"], str) else None
         if not ans or ans not in VALID_ANSWERS:
             raise ValueError(f"第 {i} 題答案必須是 A–D（目前為 {q['answer']!r}）")
         if not isinstance(q.get("options", []), list):

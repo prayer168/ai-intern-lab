@@ -222,3 +222,16 @@ def test_answer_beyond_given_options_raises(tmp_path):
     )
     with pytest.raises(ValueError, match="第 2 題答案是 D，但只有 2 個選項"):
         load_questions(p)
+
+
+@pytest.mark.parametrize("answer, expected", [("Ｃ", "C"), ("ｃ", "C"), (" Ｂ ", "B")])
+def test_fullwidth_answer_accepted_and_normalized(tmp_path, answer, expected):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps(
+            {"questions": [{"question": "水在幾度會沸騰？", "options": ["50°C", "80°C", "100°C", "120°C"], "answer": answer}]},
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    assert load_questions(p)[0]["answer"] == expected
