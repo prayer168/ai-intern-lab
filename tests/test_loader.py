@@ -110,3 +110,107 @@ def test_option_whitespace_is_stripped(tmp_path):
         encoding="utf-8",
     )
     assert load_questions(p)[0]["options"] == ["50°C", "100°C", "80°C", 120]
+
+
+@pytest.mark.parametrize("bad", [["甲"], {"text": "甲"}, True])
+def test_non_text_option_raises_with_question_and_option_number(tmp_path, bad):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "第一題", "options": ["甲", "乙"], "answer": "A"},
+            {"question": "第二題", "options": ["甲", bad, "丙"], "answer": "A"},
+        ]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題的選項B必須是文字或數字"):
+        load_questions(p)
+
+
+def test_numeric_options_still_accepted(tmp_path):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [{"question": "1+1=?", "options": [1, 2, 3.5, "4"], "answer": "B"}]}),
+        encoding="utf-8",
+    )
+    assert load_questions(p)[0]["options"] == [1, 2, 3.5, "4"]
+
+
+@pytest.mark.parametrize("options", [["甲", "乙", "甲", "丁"], ["甲", " 甲 "]])
+def test_duplicate_options_raise_with_question_number(tmp_path, options):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "第一題", "options": ["甲", "乙"], "answer": "A"},
+            {"question": "第二題", "options": options, "answer": "A"},
+        ]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題有重複的選項：甲"):
+        load_questions(p)
+
+
+@pytest.mark.parametrize("blank", ["", "   ", None])
+def test_blank_option_raises_with_question_and_option_number(tmp_path, blank):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "第一題", "options": ["甲", "乙"], "answer": "A"},
+            {"question": "第二題", "options": ["甲", blank, "丙", "丁"], "answer": "B"},
+        ]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題的選項B是空白的"):
+        load_questions(p)
+
+
+@pytest.mark.parametrize("options", ["水,火", "甲乙丙丁", {"A": "水"}])
+def test_non_list_options_raises_with_question_number(tmp_path, options):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "第一題", "options": ["甲", "乙"], "answer": "A"},
+            {"question": "第二題", "options": options, "answer": "A"},
+        ]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題的 options 必須是清單"):
+        load_questions(p)
+
+
+@pytest.mark.parametrize("item", [123, None, ["水在幾度會沸騰？", "C"]])
+def test_non_object_question_raises_with_question_number(tmp_path, item):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [{"question": "第一題", "answer": "A"}, item]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題格式不正確"):
+        load_questions(p)
+
+
+@pytest.mark.parametrize("data", [{"question": [{"question": "打錯欄位名稱", "answer": "A"}]}, {"questions": []}])
+def test_no_questions_raises(tmp_path, data):
+    p = tmp_path / "q.json"
+    p.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="題庫裡沒有任何題目"):
+        load_questions(p)
+
+
+def test_top_level_array_raises_friendly_error(tmp_path):
+    p = tmp_path / "q.json"
+    p.write_text(json.dumps([{"question": "水在幾度會沸騰？", "answer": "C"}]), encoding="utf-8")
+    with pytest.raises(ValueError, match="最外層必須是物件"):
+        load_questions(p)
+
+
+def test_answer_beyond_given_options_raises(tmp_path):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "第一題", "options": ["甲", "乙", "丙", "丁"], "answer": "D"},
+            {"question": "第二題", "options": ["對", "錯"], "answer": "D"},
+        ]}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題答案是 D，但只有 2 個選項"):
+        load_questions(p)
