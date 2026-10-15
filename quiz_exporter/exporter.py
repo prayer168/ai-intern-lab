@@ -58,6 +58,13 @@ def export_to_excel(questions, out_path):
     return out_path
 
 
+def _csv_text(value):
+    """= 開頭的文字前面加 '，Excel 開啟 CSV 時才不會當成公式。"""
+    if isinstance(value, str) and value.startswith("="):
+        return "'" + value
+    return value
+
+
 def export_to_csv(questions, out_path):
     """把題目清單匯出成 CSV（utf-8-sig，Windows Excel 開啟中文不亂碼），第一列是標題。"""
     with open(out_path, "w", encoding="utf-8-sig", newline="") as f:
@@ -66,5 +73,7 @@ def export_to_csv(questions, out_path):
         for i, q in enumerate(questions, start=1):
             options = (list(q.get("options", [])) + [""] * 4)[:4]
             ans = q.get("answer", "")
-            writer.writerow([i, q["question"], *options, ans.upper() if isinstance(ans, str) else ans])
+            writer.writerow(
+                [i, _csv_text(q["question"]), *map(_csv_text, options), ans.upper() if isinstance(ans, str) else ans]
+            )
     return out_path
