@@ -20,6 +20,9 @@ def main(argv=None):
     except json.JSONDecodeError:
         print(f"題庫檔不是正確的 JSON：{argv[0]}")
         return 1
+    except UnicodeDecodeError:
+        print(f"題庫檔不是 UTF-8 編碼：{argv[0]}（請用記事本「另存新檔」，編碼選 UTF-8 後再試）")
+        return 1
     except ValueError as e:
         print(e)
         return 1
