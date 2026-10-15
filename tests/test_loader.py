@@ -99,3 +99,10 @@ def test_utf8_bom_file_is_accepted(tmp_path):
         encoding="utf-8-sig",
     )
     assert load_questions(p) == [{"question": "水在幾度會沸騰？", "answer": "C"}]
+
+
+def test_top_level_array_raises_friendly_error(tmp_path):
+    p = tmp_path / "q.json"
+    p.write_text(json.dumps([{"question": "水在幾度會沸騰？", "answer": "C"}]), encoding="utf-8")
+    with pytest.raises(ValueError, match="最外層必須是物件"):
+        load_questions(p)
