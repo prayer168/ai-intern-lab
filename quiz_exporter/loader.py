@@ -10,6 +10,8 @@ def load_questions(path):
     data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
     questions = data.get("questions", [])
     for i, q in enumerate(questions, start=1):
+        if not isinstance(q, dict):
+            raise ValueError(f'第 {i} 題格式不正確，每一題都要寫成 {{"question": ..., "answer": ...}}')
         if "question" not in q or "answer" not in q:
             raise ValueError(f"第 {i} 題缺少 question 或 answer 欄位")
         text = q["question"].strip() if isinstance(q["question"], str) else ""

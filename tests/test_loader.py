@@ -99,3 +99,14 @@ def test_utf8_bom_file_is_accepted(tmp_path):
         encoding="utf-8-sig",
     )
     assert load_questions(p) == [{"question": "水在幾度會沸騰？", "answer": "C"}]
+
+
+@pytest.mark.parametrize("item", [123, None, ["水在幾度會沸騰？", "C"]])
+def test_non_object_question_raises_with_question_number(tmp_path, item):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [{"question": "第一題", "answer": "A"}, item]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題格式不正確"):
+        load_questions(p)
