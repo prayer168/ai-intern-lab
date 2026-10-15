@@ -20,10 +20,14 @@ def main(argv=None):
     except ValueError as e:
         print(e)
         return 1
-    if argv[1].lower().endswith(".csv"):
-        export_to_csv(questions, argv[1])
-    else:
-        export_to_excel(questions, argv[1])
+    try:
+        if argv[1].lower().endswith(".csv"):
+            export_to_csv(questions, argv[1])
+        else:
+            export_to_excel(questions, argv[1])
+    except OSError:
+        print(f"無法寫入輸出檔：{argv[1]}（請確認資料夾存在，且檔案沒有被 Excel 開著）")
+        return 1
     print(f"已匯出 {len(questions)} 題到 {argv[1]}")
     return 0
 
