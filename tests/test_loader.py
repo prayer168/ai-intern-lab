@@ -101,6 +101,20 @@ def test_utf8_bom_file_is_accepted(tmp_path):
     assert load_questions(p) == [{"question": "水在幾度會沸騰？", "answer": "C"}]
 
 
+@pytest.mark.parametrize("options", ["水,火", "甲乙丙丁", {"A": "水"}])
+def test_non_list_options_raises_with_question_number(tmp_path, options):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "第一題", "options": ["甲", "乙"], "answer": "A"},
+            {"question": "第二題", "options": options, "answer": "A"},
+        ]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題的 options 必須是清單"):
+        load_questions(p)
+
+
 @pytest.mark.parametrize("item", [123, None, ["水在幾度會沸騰？", "C"]])
 def test_non_object_question_raises_with_question_number(tmp_path, item):
     p = tmp_path / "q.json"
