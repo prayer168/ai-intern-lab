@@ -9,6 +9,7 @@ from openpyxl.utils import get_column_letter
 
 HEADERS = ["題號", "題目", "選項A", "選項B", "選項C", "選項D", "答案"]
 QUESTION_MIN_WIDTH = 40
+EXCEL_MAX_WIDTH = 255
 
 
 def _display_width(value):
@@ -18,7 +19,7 @@ def _display_width(value):
 
 
 def _style_sheet(ws):
-    """標題列加粗、凍結第一列、依內容調整欄寬（題目欄至少 40）。"""
+    """標題列加粗、凍結第一列、依內容調整欄寬（題目欄至少 40，所有欄最多 255）。"""
     for cell in ws[1]:
         cell.font = Font(bold=True)
     ws.freeze_panes = "A2"
@@ -26,7 +27,14 @@ def _style_sheet(ws):
         width = max(_display_width(c.value) for c in ws[get_column_letter(col)]) + 2
         if col == 2:
             width = max(width, QUESTION_MIN_WIDTH)
-        ws.column_dimensions[get_column_letter(col)].width = width
+        ws.column_dimensions[get_column_letter(col)].width = min(width, EXCEL_MAX_WIDTH)
+
+
+def _set_text(ws, row, col, value):
+    """寫入儲存格；以 = 開頭的文字仍當一般文字，不讓 Excel 當成公式。"""
+    cell = ws.cell(row=row, column=col, value=value)
+    if isinstance(value, str) and value.startswith("="):
+        cell.data_type = "s"
 
 
 def _clean(value):
@@ -45,15 +53,22 @@ def export_to_excel(questions, out_path):
         options = list(q.get("options", [])) + [""] * 4
         row = i + 1
         ws.cell(row=row, column=1, value=i)
-        ws.cell(row=row, column=2, value=_clean(q["question"]))
+        _set_text(ws, row, 2, _clean(q["question"]))
         for col, opt in enumerate(options[:4], start=3):
-            ws.cell(row=row, column=col, value=_clean(opt))
+            _set_text(ws, row, col, _clean(opt))
         ans = q.get("answer", "")
         ws.cell(row=row, column=7, value=ans.upper() if isinstance(ans, str) else ans)
 
     _style_sheet(ws)
     wb.save(out_path)
     return out_path
+
+
+def _csv_text(value):
+    """= 開頭的文字前面加 '，Excel 開啟 CSV 時才不會當成公式。"""
+    if isinstance(value, str) and value.startswith("="):
+        return "'" + value
+    return value
 
 
 def export_to_csv(questions, out_path):
@@ -64,5 +79,7 @@ def export_to_csv(questions, out_path):
         for i, q in enumerate(questions, start=1):
             options = (list(q.get("options", [])) + [""] * 4)[:4]
             ans = q.get("answer", "")
-            writer.writerow([i, q["question"], *options, ans.upper() if isinstance(ans, str) else ans])
+            writer.writerow(
+                [i, _csv_text(q["question"]), *map(_csv_text, options), ans.upper() if isinstance(ans, str) else ans]
+            )
     return out_path
