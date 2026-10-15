@@ -14,6 +14,8 @@ def load_questions(path):
     if not questions:
         raise ValueError('題庫裡沒有任何題目，請確認有 "questions" 清單且至少一題')
     for i, q in enumerate(questions, start=1):
+        if not isinstance(q, dict):
+            raise ValueError(f'第 {i} 題格式不正確，每一題都要寫成 {{"question": ..., "answer": ...}}')
         if "question" not in q or "answer" not in q:
             raise ValueError(f"第 {i} 題缺少 question 或 answer 欄位")
         text = q["question"].strip() if isinstance(q["question"], str) else ""
