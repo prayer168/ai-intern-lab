@@ -65,8 +65,8 @@ def export_to_excel(questions, out_path):
 
 
 def _csv_text(value):
-    """= 開頭的文字前面加 '，Excel 開啟 CSV 時才不會當成公式。"""
-    if isinstance(value, str) and value.startswith("="):
+    """= + - @ 開頭的文字前面加 '，Excel 開啟 CSV 時才不會當成公式（例如 -10°C 變成 #NAME?）。"""
+    if isinstance(value, str) and value.startswith(("=", "+", "-", "@")):
         return "'" + value
     return value
 

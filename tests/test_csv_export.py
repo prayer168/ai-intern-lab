@@ -49,3 +49,16 @@ def test_csv_text_starting_with_equals_is_not_formula(tmp_path):
     row = _read_rows(out)[1]
     assert row[1] == "'=1+1 等於多少？"
     assert row[2:4] == ["'=2", "3"]
+
+
+def test_csv_text_starting_with_formula_chars_is_not_formula(tmp_path):
+    # Excel 開 CSV 時，- + @ 開頭的文字也會被當成公式（例如 -10°C 變成 #NAME?）
+    out = tmp_path / "out.csv"
+    export_to_csv([{"question": "水在幾度會結冰？", "options": ["-10°C", "0°C", "+5°C", "@100°C"], "answer": "B"}], out)
+    assert _read_rows(out)[1][2:6] == ["'-10°C", "0°C", "'+5°C", "'@100°C"]
+
+
+def test_csv_numeric_options_unchanged(tmp_path):
+    out = tmp_path / "out.csv"
+    export_to_csv([{"question": "1-3=?", "options": [-2, 2, 0, 4], "answer": "A"}], out)
+    assert _read_rows(out)[1][1:6] == ["1-3=?", "-2", "2", "0", "4"]
