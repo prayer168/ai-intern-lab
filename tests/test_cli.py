@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from quiz_exporter.__main__ import main
 
 
@@ -32,6 +34,21 @@ def test_invalid_question_prints_loader_message(tmp_path, capsys):
     assert captured.out.strip().startswith("第 1 題答案必須是 A–D")
     assert "Traceback" not in captured.out + captured.err
     assert not out.exists()
+
+
+@pytest.mark.parametrize("name", ["out.xls", "out.txt", "out"])
+def test_unsupported_output_extension_prints_friendly_message(tmp_path, capsys, name):
+    out = tmp_path / name
+    assert main(["data/sample_quiz.json", str(out)]) == 1
+    captured = capsys.readouterr()
+    assert captured.out.strip() == f"輸出檔名必須是 .xlsx 或 .csv 結尾：{out}"
+    assert not out.exists()
+
+
+def test_uppercase_xlsx_extension_still_accepted(tmp_path):
+    out = tmp_path / "OUT.XLSX"
+    assert main(["data/sample_quiz.json", str(out)]) == 0
+    assert out.exists()
 
 
 def test_missing_output_folder_prints_friendly_message(tmp_path, capsys):
