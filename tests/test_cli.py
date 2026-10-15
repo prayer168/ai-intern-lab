@@ -32,3 +32,12 @@ def test_invalid_question_prints_loader_message(tmp_path, capsys):
     assert captured.out.strip().startswith("第 1 題答案必須是 A–D")
     assert "Traceback" not in captured.out + captured.err
     assert not out.exists()
+
+
+def test_input_is_directory_prints_friendly_message(tmp_path, capsys):
+    out = tmp_path / "out.xlsx"
+    assert main([str(tmp_path), str(out)]) == 1
+    captured = capsys.readouterr()
+    assert captured.out.strip() == f"題庫路徑是資料夾，不是檔案：{tmp_path}"
+    assert "Traceback" not in captured.out + captured.err
+    assert not out.exists()
