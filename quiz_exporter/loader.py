@@ -12,6 +12,10 @@ def load_questions(path):
     for i, q in enumerate(questions, start=1):
         if "question" not in q or "answer" not in q:
             raise ValueError(f"第 {i} 題缺少 question 或 answer 欄位")
+        opts = q.get("options", [])
+        for letter, opt in zip("ABCD", opts if isinstance(opts, list) else []):
+            if isinstance(opt, bool) or not isinstance(opt, (str, int, float, type(None))):
+                raise ValueError(f"第 {i} 題的選項{letter}必須是文字或數字")
         text = q["question"].strip() if isinstance(q["question"], str) else ""
         if not text:
             raise ValueError(f"第 {i} 題的題目是空白的")
