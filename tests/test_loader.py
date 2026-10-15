@@ -106,3 +106,16 @@ def test_top_level_array_raises_friendly_error(tmp_path):
     p.write_text(json.dumps([{"question": "水在幾度會沸騰？", "answer": "C"}]), encoding="utf-8")
     with pytest.raises(ValueError, match="最外層必須是物件"):
         load_questions(p)
+
+
+def test_answer_beyond_given_options_raises(tmp_path):
+    p = tmp_path / "q.json"
+    p.write_text(
+        json.dumps({"questions": [
+            {"question": "第一題", "options": ["甲", "乙", "丙", "丁"], "answer": "D"},
+            {"question": "第二題", "options": ["對", "錯"], "answer": "D"},
+        ]}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="第 2 題答案是 D，但只有 2 個選項"):
+        load_questions(p)
