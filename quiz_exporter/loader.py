@@ -23,4 +23,7 @@ def load_questions(path):
         if option_count > 4:
             raise ValueError(f"第 {i} 題有 {option_count} 個選項，最多允許 4 個選項")
         q["answer"] = ans
+        for letter, opt in zip("ABCD", q.get("options", [])):
+            if opt is None or (isinstance(opt, str) and not opt.strip()):
+                raise ValueError(f"第 {i} 題的選項{letter}是空白的")
     return questions
