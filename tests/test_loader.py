@@ -99,3 +99,11 @@ def test_utf8_bom_file_is_accepted(tmp_path):
         encoding="utf-8-sig",
     )
     assert load_questions(p) == [{"question": "水在幾度會沸騰？", "answer": "C"}]
+
+
+@pytest.mark.parametrize("value", [5, "第一題", {"question": "q", "answer": "A"}])
+def test_questions_not_a_list_raises(tmp_path, value):
+    p = tmp_path / "q.json"
+    p.write_text(json.dumps({"questions": value}, ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(ValueError, match='"questions" 必須是清單'):
+        load_questions(p)
